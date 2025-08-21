@@ -8,33 +8,38 @@ import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/screens/insulin_estimator_screen2.dart';
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/buttons.dart';
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/expandable_card.dart';
-import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/insulin_bar.dart';
+import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/insulinbar.dart';
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/second_button.dart';
 import 'package:provider/provider.dart';
 
-class InsulinEstimatorScreen3 extends StatefulWidget {
-  final double GlucoseValue;
-  final double InsulinValue;
-  const InsulinEstimatorScreen3(
-      {super.key, required this.GlucoseValue, required this.InsulinValue});
+class InsulinEstimatorResultScreen extends StatefulWidget {
+  const InsulinEstimatorResultScreen({super.key});
 
   @override
-  State<InsulinEstimatorScreen3> createState() =>
-      _InsulinEstimatorScreen3State();
+  State<InsulinEstimatorResultScreen> createState() =>
+      _InsulinEstimatorResultScreenState();
 }
 
-class _InsulinEstimatorScreen3State extends State<InsulinEstimatorScreen3> {
+class _InsulinEstimatorResultScreenState
+    extends State<InsulinEstimatorResultScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<InsulinEstimatorController>();
+    final statusProperties = provider.getStatusProperties();
     ScreenUtil.getInstance().init(context);
+
     return Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.white,
           surfaceTintColor: AppColors.white,
           leading: IconButton(
             onPressed: () {
+              provider.reset(); // Reset all values
               Navigator.pop(context);
+              // Navigator.pushReplacement(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) => const InsulinEstimatorScreen2()));
             },
             icon: const Icon(
               Icons.arrow_back_ios_new,
@@ -88,6 +93,7 @@ class _InsulinEstimatorScreen3State extends State<InsulinEstimatorScreen3> {
                         Text(
                           "Your Insulin Resistance Estimate (HOMA-IR)",
                           maxLines: 2,
+                          textAlign: TextAlign.center,
                           style: GoogleFonts.roboto(
                             color: AppColors.headingcolor,
                             fontSize: 16.sp,
@@ -95,19 +101,23 @@ class _InsulinEstimatorScreen3State extends State<InsulinEstimatorScreen3> {
                           ),
                         ),
                         sizedBoxWithHeight(20),
+
+                        // Display the calculated HOMA-IR score
                         Text(
-                          "1.0",
-                          maxLines: 2,
+                          provider.homaIrScore?.toStringAsFixed(2) ?? "0.0",
                           style: GoogleFonts.roboto(
-                            color: AppColors.headingcolor,
+                            color: AppColors.green,
                             fontSize: 30.sp,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
                         sizedBoxWithHeight(20),
-                        //  utilize the percentage bar
-                        const InsulinBar(insulinValue: 200), //change as backend
+
+                        // Display the insulin sensitivity bar with actual score
+                        InsulinBar(insulinValue: provider.homaIrScore ?? 0.0),
                         sizedBoxWithHeight(20),
+
+                        // Dynamic result message based on calculation
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
@@ -117,38 +127,87 @@ class _InsulinEstimatorScreen3State extends State<InsulinEstimatorScreen3> {
                             ),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "✅ Yours HOMA-IR score suggests ",
-                                  style: GoogleFonts.roboto(
-                                    color: AppColors.black,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: "very good insulin sensitivity. ",
-                                  style: GoogleFonts.roboto(
-                                    color: AppColors.green,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                TextSpan(
-                                  text: "Keep up your healthy habits!",
-                                  style: GoogleFonts.roboto(
-                                    color: AppColors.black,
-                                    fontSize: 12.sp,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
+                          child: Text(
+                            statusProperties['message'] ??
+                                'Please calculate HOMA-IR first.',
+                            style: GoogleFonts.roboto(
+                              color: AppColors.black,
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ),
                         sizedBoxWithHeight(20),
+
+                        // // Display lab values used for calculation
+                        // Container(
+                        //   padding: const EdgeInsets.all(15),
+                        //   decoration: BoxDecoration(
+                        //     color: Colors.grey[100],
+                        //     borderRadius: BorderRadius.circular(15),
+                        //   ),
+                        //   child: Column(
+                        //     children: [
+                        //       Text(
+                        //         "Lab Values Used:",
+                        //         style: GoogleFonts.roboto(
+                        //           color: AppColors.black,
+                        //           fontSize: 14.sp,
+                        //           fontWeight: FontWeight.w600,
+                        //         ),
+                        //       ),
+                        //       sizedBoxWithHeight(10),
+                        //       Row(
+                        //         mainAxisAlignment:
+                        //             MainAxisAlignment.spaceAround,
+                        //         children: [
+                        //           Column(
+                        //             children: [
+                        //               Text(
+                        //                 "Glucose",
+                        //                 style: GoogleFonts.roboto(
+                        //                   color: AppColors.grey,
+                        //                   fontSize: 12.sp,
+                        //                   fontWeight: FontWeight.w400,
+                        //                 ),
+                        //               ),
+                        //               Text(
+                        //                 "${provider.Glucosecontroller.text} mg/dL",
+                        //                 style: GoogleFonts.roboto(
+                        //                   color: AppColors.black,
+                        //                   fontSize: 12.sp,
+                        //                   fontWeight: FontWeight.w600,
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //           Column(
+                        //             children: [
+                        //               Text(
+                        //                 "Insulin",
+                        //                 style: GoogleFonts.roboto(
+                        //                   color: AppColors.grey,
+                        //                   fontSize: 12.sp,
+                        //                   fontWeight: FontWeight.w400,
+                        //                 ),
+                        //               ),
+                        //               Text(
+                        //                 "${provider.Insulincontroller.text} µU/mL",
+                        //                 style: GoogleFonts.roboto(
+                        //                   color: AppColors.black,
+                        //                   fontSize: 12.sp,
+                        //                   fontWeight: FontWeight.w600,
+                        //                 ),
+                        //               ),
+                        //             ],
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ],
+                        //   ),
+                        // ),
+                        sizedBoxWithHeight(20),
+
                         Buttons(
                             subject: "See Lifestyle Plan to Improve",
                             ontap: () {
@@ -201,6 +260,7 @@ class _InsulinEstimatorScreen3State extends State<InsulinEstimatorScreen3> {
                         SecondButton(
                             subject: "Recalculate",
                             ontap: () {
+                              provider.reset(); // Reset all values
                               Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(

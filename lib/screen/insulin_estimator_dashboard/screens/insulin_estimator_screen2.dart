@@ -5,7 +5,7 @@ import 'package:insulin_sensitivity_estimator/helpers/screen_config.dart';
 import 'package:insulin_sensitivity_estimator/helpers/size_extension.dart';
 import 'package:insulin_sensitivity_estimator/helpers/sizedbox.dart';
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/controller/insulin_estimator_controller.dart';
-import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/screens/insulin_estimator_screen3.dart';
+import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/screens/insulin_estimator_resultscreen.dart';
 import 'package:insulin_sensitivity_estimator/screen/insulin_estimator_dashboard/widgets/buttons.dart';
 import 'package:provider/provider.dart';
 
@@ -29,11 +29,6 @@ class _InsulinEstimatorScreen2State extends State<InsulinEstimatorScreen2> {
           leading: IconButton(
             onPressed: () {
               Navigator.pop(context);
-              // Navigator.pushReplacement(
-              //     context,
-              //     MaterialPageRoute(
-              //       builder: (context) => const HbA1cConverterScreen1(),
-              //     ));
             },
             icon: const Icon(
               Icons.arrow_back_ios_new,
@@ -130,17 +125,21 @@ class _InsulinEstimatorScreen2State extends State<InsulinEstimatorScreen2> {
                                     borderRadius: BorderRadius.circular(25),
                                     borderSide: const BorderSide(
                                         color: AppColors.red, width: 1)),
+                                focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                    borderSide: const BorderSide(
+                                        color: AppColors.red, width: 1)),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter a value';
+                                  return 'Please enter a glucose value';
                                 }
-                                final parsed = double.tryParse(value);
+                                final parsed = double.tryParse(value.trim());
                                 if (parsed == null) {
                                   return 'Enter a valid number';
                                 }
-                                if (parsed < 30 || parsed > 80) {
-                                  return 'Enter a realistic glucose value (30-80)';
+                                if (parsed < 60 || parsed > 300) {
+                                  return 'Enter a realistic glucose value (60-300 mg/dL)';
                                 }
                                 return null;
                               },
@@ -191,17 +190,21 @@ class _InsulinEstimatorScreen2State extends State<InsulinEstimatorScreen2> {
                                     borderRadius: BorderRadius.circular(25),
                                     borderSide: const BorderSide(
                                         color: AppColors.red, width: 1)),
+                                focusedErrorBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                    borderSide: const BorderSide(
+                                        color: AppColors.red, width: 1)),
                               ),
                               validator: (value) {
                                 if (value == null || value.trim().isEmpty) {
-                                  return 'Please enter a value';
+                                  return 'Please enter an insulin value';
                                 }
-                                final parsed = double.tryParse(value);
+                                final parsed = double.tryParse(value.trim());
                                 if (parsed == null) {
                                   return 'Enter a valid number';
                                 }
-                                if (parsed < 30 || parsed > 80) {
-                                  return 'Enter a realistic insulin value (30-80)';
+                                if (parsed < 1 || parsed > 100) {
+                                  return 'Enter a realistic insulin value (1-100 µU/mL)';
                                 }
                                 return null;
                               },
@@ -222,18 +225,19 @@ class _InsulinEstimatorScreen2State extends State<InsulinEstimatorScreen2> {
                               subject: "Calculate HOMA-IR",
                               ontap: () {
                                 if (provider.formKey.currentState!.validate()) {
+                                  final glucose = double.parse(
+                                      provider.Glucosecontroller.text.trim());
+                                  final insulin = double.parse(
+                                      provider.Insulincontroller.text.trim());
+
+                                  // Calculate HOMA-IR in the controller
+                                  provider.calculateHomaIr(glucose, insulin);
+
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          InsulinEstimatorScreen3(
-                                        InsulinValue: double.parse(provider
-                                            .Insulincontroller.text
-                                            .trim()),
-                                        GlucoseValue: double.parse(provider
-                                            .Glucosecontroller.text
-                                            .trim()),
-                                      ),
+                                          const InsulinEstimatorResultScreen(),
                                     ),
                                   );
                                 }
